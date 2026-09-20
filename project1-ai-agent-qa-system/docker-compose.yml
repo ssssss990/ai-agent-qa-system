@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - milvus
+      - redis
+      - jaeger
+    environment:
+      - APP_MILVUS_HOST=milvus
+      - APP_REDIS_HOST=redis
+      - APP_OTEL_ENDPOINT=http://jaeger:4317
+    volumes:
+      - ./data:/app/data
+
+  milvus:
+    image: milvusdb/milvus:v2.4.9
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    volumes:
+      - milvus_data:/var/lib/milvus
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+
+volumes:
+  milvus_data:
+  redis_data:
